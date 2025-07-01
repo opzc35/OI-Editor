@@ -45,46 +45,15 @@ jobs:
         with:
           path: dist
 
-      - name: Create Pre-release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: pre-release-${{ github.sha }}
-          release_name: Pre-release ${{ github.sha }}
-          draft: false
-          prerelease: true
+      - name: Create download links
+        run: |
+          echo "Linux: https://github.com/opzc35/OI-Editor/releases/download/pre-release-${{ github.sha }}/OI-Editor-linux" > dist/download-links.txt
+          echo "Windows: https://github.com/opzc35/OI-Editor/releases/download/pre-release-${{ github.sha }}/OI-Editor-windows.exe" >> dist/download-links.txt
+          echo "MacOS: https://github.com/opzc35/OI-Editor/releases/download/pre-release-${{ github.sha }}/OI-Editor-macos" >> dist/download-links.txt
 
-      - name: Upload Linux artifact
-        if: always()
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+      - name: Create download links issue
+        uses: peter-evans/create-issue-from-file@v5
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/OI-Editor-ubuntu-latest/OI-Editor
-          asset_name: OI-Editor-linux
-          asset_content_type: application/octet-stream
-
-      - name: Upload Windows artifact
-        if: always()
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/OI-Editor-windows-latest/OI-Editor.exe
-          asset_name: OI-Editor-windows.exe
-          asset_content_type: application/octet-stream
-
-      - name: Upload MacOS artifact
-        if: always()
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/OI-Editor-macos-latest/OI-Editor
-          asset_name: OI-Editor-macos
-          asset_content_type: application/octet-stream
+          title: OI-Editor 预发布下载链接 ${{ github.sha }}
+          content-filepath: dist/download-links.txt
+          labels: pre-release,download
