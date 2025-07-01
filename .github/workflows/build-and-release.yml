@@ -25,9 +25,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyqt6 pyinstaller
 
+      - name: Copy local gcc to dist
+        run: |
+          mkdir -p dist/gcc/windows/bin
+          mkdir -p dist/gcc/linux/bin
+          mkdir -p dist/gcc/macos/bin
+          cp -r gcc/windows/bin dist/gcc/windows/ || true
+          cp -r gcc/linux/bin dist/gcc/linux/ || true
+          cp -r gcc/macos/bin dist/gcc/macos/ || true
+
       - name: Build installer executable
         run: |
-          pyinstaller --onefile install_oi_editor.py --name OI-Editor-Installer
+          pyinstaller --onefile --add-data "gcc:./gcc" install_oi_editor.py --name OI-Editor-Installer
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
