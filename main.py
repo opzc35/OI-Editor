@@ -1,9 +1,9 @@
 import sys
 import os
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QFileDialog, QPlainTextEdit, QVBoxLayout, QWidget, QToolBar, QAction, QMessageBox, QStatusBar
+    QApplication, QMainWindow, QFileDialog, QPlainTextEdit, QVBoxLayout, QWidget, QToolBar, QMessageBox, QStatusBar
 )
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtCore import QProcess
 
 class CppEditor(QMainWindow):
