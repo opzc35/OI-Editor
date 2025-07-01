@@ -38,7 +38,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: (github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch') && github.repository == '你的用户名/你的仓库名'
+    if: (github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch') && github.repository == 'opzc35/OI-Editor'
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
