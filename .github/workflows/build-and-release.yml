@@ -38,7 +38,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    if: (github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch') && github.repository == '你的用户名/你的仓库名'
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -53,4 +53,4 @@ jobs:
           name: Pre-release ${{ github.sha }}
           files: dist/**/OI-Editor*
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
