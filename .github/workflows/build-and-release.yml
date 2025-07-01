@@ -1,0 +1,55 @@
+name: Build and Pre-release
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyqt6 pyinstaller
+
+      - name: Build single executable
+        run: |
+          pyinstaller --onefile --windowed main.py --name OI-Editor
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OI-Editor-${{ matrix.os }}
+          path: dist/OI-Editor*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Create Pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: pre-release-${{ github.sha }}
+          prerelease: true
+          name: Pre-release ${{ github.sha }}
+          files: dist/**/OI-Editor*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
