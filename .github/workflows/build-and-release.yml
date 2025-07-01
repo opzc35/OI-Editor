@@ -25,15 +25,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyqt6 pyinstaller
 
-      - name: Build single executable
+      - name: Build installer executable
         run: |
-          pyinstaller --onefile --windowed main.py --name OI-Editor
+          pyinstaller --onefile install_oi_editor.py --name OI-Editor-Installer
 
-      - name: Upload artifact
+      - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: OI-Editor-${{ matrix.os }}
-          path: dist/OI-Editor*
+          name: OI-Editor-Installer-${{ matrix.os }}
+          path: dist/OI-Editor-Installer*
 
   release:
     needs: build
@@ -47,13 +47,13 @@ jobs:
 
       - name: Create download links
         run: |
-          echo "Linux: https://github.com/opzc35/OI-Editor/releases/download/pre-release-${{ github.sha }}/OI-Editor-linux" > dist/download-links.txt
-          echo "Windows: https://github.com/opzc35/OI-Editor/releases/download/pre-release-${{ github.sha }}/OI-Editor-windows.exe" >> dist/download-links.txt
-          echo "MacOS: https://github.com/opzc35/OI-Editor/releases/download/pre-release-${{ github.sha }}/OI-Editor-macos" >> dist/download-links.txt
+          echo "Windows: https://github.com/opzc35/OI-Editor/releases/download/pre-release-${{ github.sha }}/OI-Editor-Installer-windows-latest.exe" > dist/download-links.txt
+          echo "Linux: https://github.com/opzc35/OI-Editor/releases/download/pre-release-${{ github.sha }}/OI-Editor-Installer-ubuntu-latest" >> dist/download-links.txt
+          echo "MacOS: https://github.com/opzc35/OI-Editor/releases/download/pre-release-${{ github.sha }}/OI-Editor-Installer-macos-latest" >> dist/download-links.txt
 
       - name: Create download links issue
         uses: peter-evans/create-issue-from-file@v5
         with:
-          title: OI-Editor 预发布下载链接 ${{ github.sha }}
+          title: OI-Editor 安装包下载链接 ${{ github.sha }}
           content-filepath: dist/download-links.txt
           labels: pre-release,download

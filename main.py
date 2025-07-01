@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtCore import QProcess
+import platform
 
 class CppEditor(QMainWindow):
     def __init__(self):
@@ -16,6 +17,35 @@ class CppEditor(QMainWindow):
         self.current_file = None
         self.process = QProcess(self)
         self.init_ui()
+
+    def get_gcc_path(self):
+        # 优先使用内置 gcc/clang，按平台查找
+        base_dir = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
+        sysname = platform.system()
+        if sysname == 'Windows':
+            gcc_path = os.path.join(base_dir, 'gcc', 'windows', 'bin', 'g++.exe')
+            if os.path.exists(gcc_path):
+                return f'"{gcc_path}"'
+            return 'g++'
+        elif sysname == 'Linux':
+            gcc_path = os.path.join(base_dir, 'gcc', 'linux', 'bin', 'g++')
+            if os.path.exists(gcc_path):
+                return f'"{gcc_path}"'
+            # 兼容 tcc
+            tcc_path = os.path.join(base_dir, 'gcc', 'linux', 'bin', 'tcc')
+            if os.path.exists(tcc_path):
+                return f'"{tcc_path}"'
+            return 'g++'
+        elif sysname == 'Darwin':
+            clang_path = os.path.join(base_dir, 'gcc', 'macos', 'bin', 'clang++')
+            if os.path.exists(clang_path):
+                return f'"{clang_path}"'
+            gcc_path = os.path.join(base_dir, 'gcc', 'macos', 'bin', 'g++')
+            if os.path.exists(gcc_path):
+                return f'"{gcc_path}"'
+            return 'clang++'
+        else:
+            return 'g++'
 
     def init_ui(self):
         toolbar = QToolBar()
@@ -64,9 +94,10 @@ class CppEditor(QMainWindow):
         if not self.current_file:
             return
         exe_file = os.path.splitext(self.current_file)[0]
-        compile_cmd = f"g++ '{self.current_file}' -o '{exe_file}'"
+        gcc = self.get_gcc_path()
+        compile_cmd = f"{gcc} '{self.current_file}' -o '{exe_file}'"
         self.process.finished.connect(lambda: self.status.showMessage("编译完成"))
-        self.process.start("bash", ["-c", compile_cmd])
+        self.process.start("bash" if platform.system() != 'Windows' else 'cmd', ["-c" if platform.system() != 'Windows' else '/C', compile_cmd])
         self.status.showMessage("正在编译...")
 
     def run_cpp(self):
