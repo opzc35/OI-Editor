@@ -40,14 +40,16 @@ class MonacoEditorWidget(QWidget):
     def set_code(self, code: str):
         # 通过JS设置代码内容
         js = f"window.setEditorCode({repr(code)})"
-        if self.webview.page().url().isEmpty():
+        # If the editor is not loaded yet, store the code to set later
+        if not self.webview.page().url().isValid():
             self._pending_code = code
         else:
             self.webview.page().runJavaScript(js)
 
     def set_theme(self, theme: str):
         js = f"window.setEditorTheme('{theme}')"
-        if self.webview.page().url().isEmpty():
+        # If the editor is not loaded yet, store the theme to set later
+        if not self.webview.page().url().isValid():
             self._pending_theme = theme
         else:
             self.webview.page().runJavaScript(js)

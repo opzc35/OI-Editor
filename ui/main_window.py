@@ -6,6 +6,39 @@ from problems.problem_viewer import ProblemViewer
 import openai
 from PyQt6.QtWidgets import QMessageBox
 import os
+from PyQt6.QtWidgets import QDialog, QFormLayout, QLineEdit, QComboBox, QPushButton, QDialogButtonBox
+
+class SettingsDialog(QDialog):
+    def __init__(self, parent=None, config=None):
+        super().__init__(parent)
+        self.setWindowTitle("设置")
+        layout = QFormLayout(self)
+        self.theme_box = QComboBox()
+        self.theme_box.addItems(["深色", "浅色"])
+        if config and config.get('theme') == 'vs':
+            self.theme_box.setCurrentIndex(1)
+        self.api_key_edit = QLineEdit()
+        self.api_key_edit.setText(config.get('openai_api_key', ''))
+        self.api_url_edit = QLineEdit()
+        self.api_url_edit.setText(config.get('openai_api_url', 'https://api.openai.com/v1'))
+        self.model_edit = QLineEdit()
+        self.model_edit.setText(config.get('openai_model', 'gpt-3.5-turbo'))
+        layout.addRow("系统模式", self.theme_box)
+        layout.addRow("OpenAI API Key", self.api_key_edit)
+        layout.addRow("OpenAI API 地址", self.api_url_edit)
+        layout.addRow("模型名称", self.model_edit)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        layout.addWidget(self.button_box)
+
+    def get_settings(self):
+        return {
+            'theme': 'vs' if self.theme_box.currentIndex() == 1 else 'vs-dark',
+            'openai_api_key': self.api_key_edit.text(),
+            'openai_api_url': self.api_url_edit.text(),
+            'openai_model': self.model_edit.text()
+        }
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -50,6 +83,10 @@ class MainWindow(QMainWindow):
         translate_action = QAction("翻译当前代码", self)
         translate_action.triggered.connect(self.translate_code)
         ai_menu.addAction(translate_action)
+        # 设置面板
+        settings_action = QAction("设置", self)
+        settings_action.triggered.connect(self.open_settings)
+        menubar.addAction(settings_action)
 
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "打开文件", "", "All Files (*)")
@@ -62,11 +99,18 @@ class MainWindow(QMainWindow):
         code = self.editor.webview.page().runJavaScript("editor.getValue()", lambda code: self._do_translate(code))
 
     def _do_translate(self, code):
-        # 这里请替换为你的 OpenAI API Key
-        openai.api_key = os.environ.get('OPENAI_API_KEY', 'sk-xxx')
+        config = getattr(self, '_config', {})
+        api_key = config.get('openai_api_key') or os.environ.get('OPENAI_API_KEY')
+        api_url = config.get('openai_api_url', 'https://api.openai.com/v1')
+        model = config.get('openai_model', 'gpt-3.5-turbo')
+        if not api_key:
+            QMessageBox.warning(self, "AI 错误", "请先在设置中填写 OpenAI API Key")
+            return
+        openai.api_key = api_key
+        openai.api_base = api_url
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
+                model=model,
                 messages=[
                     {"role": "system", "content": "你是一个代码翻译助手，请将输入的代码注释翻译为英文。"},
                     {"role": "user", "content": code}
@@ -76,3 +120,31 @@ class MainWindow(QMainWindow):
         except Exception as e:
             translation = f"AI 翻译失败: {e}"
         QMessageBox.information(self, "AI 翻译结果", translation)
+
+    def open_settings(self):
+        config = getattr(self, '_config', {})
+        dlg = SettingsDialog(self, config)
+        if dlg.exec():
+            settings = dlg.get_settings()
+            self._config = settings
+            # 应用主题
+            self.editor.set_theme(settings['theme'])
+            # 保存API设置，可扩展为持久化
+            print("应用设置:", settings)
+
+    def get_config(self):
+        # 这里应该从配置文件加载设置
+        return {
+            'theme': 'vs-dark',
+            'openai_api_key': 'sk-xxx',
+            'openai_api_url': 'https://api.openai.com/v1',
+            'openai_model': 'gpt-3.5-turbo'
+        }
+
+    def apply_settings(self, settings):
+        # 这里应该保存设置到配置文件
+        print("应用设置:", settings)
+        if settings['theme'] == 'vs':
+            self.editor.set_theme('vs')
+        else:
+            self.editor.set_theme('vs-dark')
