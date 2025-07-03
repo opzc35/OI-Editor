@@ -3,6 +3,9 @@ from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 from editor.monaco_widget import MonacoEditorWidget
 from problems.problem_viewer import ProblemViewer
+import openai
+from PyQt6.QtWidgets import QMessageBox
+import os
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -42,9 +45,34 @@ class MainWindow(QMainWindow):
         theme_menu.addAction(dark_action)
         theme_menu.addAction(light_action)
 
+        # AI 翻译菜单
+        ai_menu = menubar.addMenu("AI")
+        translate_action = QAction("翻译当前代码", self)
+        translate_action.triggered.connect(self.translate_code)
+        ai_menu.addAction(translate_action)
+
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "打开文件", "", "All Files (*)")
         if file_path:
             with open(file_path, 'r', encoding='utf-8') as f:
                 code = f.read()
             self.editor.set_code(code)
+
+    def translate_code(self):
+        code = self.editor.webview.page().runJavaScript("editor.getValue()", lambda code: self._do_translate(code))
+
+    def _do_translate(self, code):
+        # 这里请替换为你的 OpenAI API Key
+        openai.api_key = os.environ.get('OPENAI_API_KEY', 'sk-xxx')
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "你是一个代码翻译助手，请将输入的代码注释翻译为英文。"},
+                    {"role": "user", "content": code}
+                ]
+            )
+            translation = response['choices'][0]['message']['content']
+        except Exception as e:
+            translation = f"AI 翻译失败: {e}"
+        QMessageBox.information(self, "AI 翻译结果", translation)
