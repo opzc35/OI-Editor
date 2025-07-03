@@ -22,22 +22,27 @@ jobs:
           pip install pyinstaller
       - name: Prepare compilers
         run: |
-          mkdir -p resources/compilers
+          mkdir -p compiler
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            curl -L -o resources/compilers/g++-linux.tar.gz https://github.com/oi-editor/compilers/releases/download/latest/g++-linux.tar.gz
-            tar -xzvf resources/compilers/g++-linux.tar.gz -C resources/compilers/
-            curl -L -o resources/compilers/fpc-linux.tar.gz https://github.com/oi-editor/compilers/releases/download/latest/fpc-linux.tar.gz
-            tar -xzvf resources/compilers/fpc-linux.tar.gz -C resources/compilers/
+            sudo apt-get update
+            sudo apt-get install -y g++ fp-compiler
+            which g++ && g++ --version
+            which fpc && fpc -iV
+            cp $(which g++) compiler/ || true
+            cp $(which fpc) compiler/ || true
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            curl -L -o resources/compilers/g++-win.zip https://github.com/oi-editor/compilers/releases/download/latest/g++-win.zip
-            unzip -o resources/compilers/g++-win.zip -d resources/compilers/
-            curl -L -o resources/compilers/fpc-win.zip https://github.com/oi-editor/compilers/releases/download/latest/fpc-win.zip
-            unzip -o resources/compilers/fpc-win.zip -d resources/compilers/
+            choco install -y mingw
+            choco install -y fpc
+            # 复制mingw和fpc可执行文件到compiler目录（路径需根据choco安装结果调整）
+            cp C:/tools/mingw64/bin/g++.exe compiler/ || true
+            cp "C:/Program Files (x86)/FreePascal/bin/i386-win32/fpc.exe" compiler/ || true
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            curl -L -o resources/compilers/g++-mac.tar.gz https://github.com/oi-editor/compilers/releases/download/latest/g++-mac.tar.gz
-            tar -xzvf resources/compilers/g++-mac.tar.gz -C resources/compilers/
-            curl -L -o resources/compilers/fpc-mac.tar.gz https://github.com/oi-editor/compilers/releases/download/latest/fpc-mac.tar.gz
-            tar -xzvf resources/compilers/fpc-mac.tar.gz -C resources/compilers/
+            brew update
+            brew install gcc fpc
+            which g++ && g++ --version
+            which fpc && fpc -iV
+            cp $(which g++) compiler/ || true
+            cp $(which fpc) compiler/ || true
           fi
       - name: Build executable
         run: |
