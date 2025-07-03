@@ -23,26 +23,26 @@ jobs:
       - name: Prepare compilers
         shell: bash
         run: |
-          mkdir -p compiler
+          mkdir -p resources/compilers
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
             sudo apt-get update
             sudo apt-get install -y g++ fp-compiler
             which g++ && g++ --version
             which fpc && fpc -iV
-            cp $(which g++) compiler/ || true
-            cp $(which fpc) compiler/ || true
+            cp $(which g++) resources/compilers/ || true
+            cp $(which fpc) resources/compilers/ || true
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             choco install -y mingw
             choco install -y fpc || echo "skip fpc"
-            cp C:/tools/mingw64/bin/g++.exe compiler/ || true
-            cp "C:/Program Files (x86)/FreePascal/bin/i386-win32/fpc.exe" compiler/ || true
+            cp C:/tools/mingw64/bin/g++.exe resources/compilers/ || true
+            cp "C:/Program Files (x86)/FreePascal/bin/i386-win32/fpc.exe" resources/compilers/ || true
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
             brew update
             brew install gcc fpc
             which g++ && g++ --version
             which fpc && fpc -iV
-            cp $(which g++) compiler/ || true
-            cp $(which fpc) compiler/ || true
+            cp $(which g++) resources/compilers/ || true
+            cp $(which fpc) resources/compilers/ || true
           fi
       - name: Build executable
         run: |
