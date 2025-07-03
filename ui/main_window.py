@@ -1,4 +1,5 @@
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QSplitter, QTextBrowser, QAction, QFileDialog
+from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QSplitter, QTextBrowser, QFileDialog
+from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 from editor.monaco_widget import MonacoEditorWidget
 from problems.problem_viewer import ProblemViewer
