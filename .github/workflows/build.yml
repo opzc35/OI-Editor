@@ -1,0 +1,60 @@
+name: Build OI-Editor
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [published, prereleased]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+      - name: Prepare compilers
+        run: |
+          mkdir -p resources/compilers
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            curl -L -o resources/compilers/g++-linux.tar.gz https://github.com/oi-editor/compilers/releases/download/latest/g++-linux.tar.gz
+            tar -xzvf resources/compilers/g++-linux.tar.gz -C resources/compilers/
+            curl -L -o resources/compilers/fpc-linux.tar.gz https://github.com/oi-editor/compilers/releases/download/latest/fpc-linux.tar.gz
+            tar -xzvf resources/compilers/fpc-linux.tar.gz -C resources/compilers/
+          elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            curl -L -o resources/compilers/g++-win.zip https://github.com/oi-editor/compilers/releases/download/latest/g++-win.zip
+            unzip -o resources/compilers/g++-win.zip -d resources/compilers/
+            curl -L -o resources/compilers/fpc-win.zip https://github.com/oi-editor/compilers/releases/download/latest/fpc-win.zip
+            unzip -o resources/compilers/fpc-win.zip -d resources/compilers/
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            curl -L -o resources/compilers/g++-mac.tar.gz https://github.com/oi-editor/compilers/releases/download/latest/g++-mac.tar.gz
+            tar -xzvf resources/compilers/g++-mac.tar.gz -C resources/compilers/
+            curl -L -o resources/compilers/fpc-mac.tar.gz https://github.com/oi-editor/compilers/releases/download/latest/fpc-mac.tar.gz
+            tar -xzvf resources/compilers/fpc-mac.tar.gz -C resources/compilers/
+          fi
+      - name: Build executable
+        run: |
+          bash build/build_all.sh
+        shell: bash
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OI-Editor-${{ matrix.os }}
+          path: dist/
+      - name: Upload Release Asset
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
