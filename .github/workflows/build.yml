@@ -21,6 +21,7 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
       - name: Prepare compilers
+        shell: bash
         run: |
           mkdir -p compiler
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
@@ -33,7 +34,6 @@ jobs:
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             choco install -y mingw
             choco install -y fpc
-            # 复制mingw和fpc可执行文件到compiler目录（路径需根据choco安装结果调整）
             cp C:/tools/mingw64/bin/g++.exe compiler/ || true
             cp "C:/Program Files (x86)/FreePascal/bin/i386-win32/fpc.exe" compiler/ || true
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
