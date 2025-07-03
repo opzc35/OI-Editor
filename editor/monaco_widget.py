@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout
 from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtCore import QUrl
 import os
 
 class MonacoEditorWidget(QWidget):
@@ -14,7 +15,8 @@ class MonacoEditorWidget(QWidget):
     def load_editor(self):
         # 加载本地Monaco Editor HTML
         editor_html = os.path.join(os.path.dirname(__file__), 'monaco.html')
-        self.webview.load(f'file://{editor_html}')
+        url = QUrl.fromLocalFile(editor_html)
+        self.webview.load(url)
 
     def set_code(self, code: str):
         # 通过JS设置代码内容
