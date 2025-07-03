@@ -9,6 +9,6 @@ pyinstaller --noconfirm --onefile --add-data "editor:editor" --add-data "ui:ui" 
 
 # 2. 拷贝内置编译器到 dist 目录
 mkdir -p dist/compilers
-cp -r ../resources/compilers/* dist/compilers/
+cp -r compiler/* dist/compilers/ || true
 
 echo "打包完成，编译器已内置。请在 dist/ 目录下查找可执行文件。"
