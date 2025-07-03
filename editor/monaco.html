@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <title>Monaco Editor</title>
     <style>html,body,#container{height:100%;margin:0;padding:0;}</style>
-    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+    <!-- 本地加载 require.js/loader.js 和 monaco-editor -->
+    <script src="monaco/loader.js"></script>
 </head>
 <body>
 <div id="container" style="width:100vw;height:100vh;"></div>
 <script>
     let editor;
-    require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } });
+    require.config({ paths: { 'vs': 'monaco/min/vs' } });
     require(['vs/editor/editor.main'], function () {
         editor = monaco.editor.create(document.getElementById('container'), {
             value: '',

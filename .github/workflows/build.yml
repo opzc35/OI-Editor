@@ -58,3 +58,18 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*
+      - name: Download Monaco Editor
+        run: |
+          MONACO_VERSION=0.44.0
+          MONACO_URL="https://github.com/microsoft/monaco-editor/releases/download/v$MONACO_VERSION/monaco-editor-$MONACO_VERSION.zip"
+          MONACO_TMP=monaco_tmp
+          MONACO_DIR=editor/monaco
+          if [ ! -d "$MONACO_DIR/min/vs" ]; then
+            mkdir -p $MONACO_TMP
+            curl -L "$MONACO_URL" -o $MONACO_TMP/monaco.zip
+            unzip -q $MONACO_TMP/monaco.zip -d $MONACO_TMP
+            mkdir -p $MONACO_DIR
+            cp -r $MONACO_TMP/monaco-editor-$MONACO_VERSION/min $MONACO_DIR/
+            cp $MONACO_TMP/monaco-editor-$MONACO_VERSION/loader.js $MONACO_DIR/
+            rm -rf $MONACO_TMP
+          fi
