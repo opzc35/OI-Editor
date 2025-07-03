@@ -1,3 +1,5 @@
 PyQt6
-python-monaco-editor
+PyQt6-WebEngine
+requests
+beautifulsoup4
 pyinstaller
